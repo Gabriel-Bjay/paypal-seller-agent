@@ -27,6 +27,9 @@ Disputes cost small online sellers money and time: a lost "item not received" cl
 
 - **Case list:** every tracked PayPal order with a plain-English status (Action needed, Not captured, In PayPal review, Refunded, Paid...), the ones needing attention first.
 - **Case detail:** money summary (amount, PayPal fee, refunded), flags for anything that needs attention, the dispute summary and a timeline built from PayPal data: payment, fee, refunds, dispute, messages, offers and outcome.
+- **Rules (`/settings`):** the seller decides what the agent may do alone, what needs approval and what is blocked (amount limit, approval and block thresholds as % of the order, approval before fighting or messaging). Enforced in code by `src/lib/rules.ts`; the AI can only propose actions.
+- **Safety checks that always apply:** no refund above what is left on the payment, only actions PayPal currently allows on the dispute, strictly valid amounts.
+- **Action gate and audit log:** every PayPal action goes through `executeAction` in `src/lib/actions.ts`, which re-checks live PayPal state and the rules, refuses blocked or unapproved actions, and logs every attempt (shown on the case page). Example: capture a payment the buyer approved but you never collected.
 - **Seed data:** `npm run seed` creates five realistic sandbox cases, including an open "item not received" dispute.
 
 ## Project structure
@@ -34,7 +37,9 @@ Disputes cost small online sellers money and time: a lost "item not received" cl
 ```
 src/lib/paypal/        PayPal REST client, orders and disputes helpers
 src/lib/cases.ts       Builds a case (status, flags, timeline) from PayPal data
-src/lib/store.ts       The list of orders the app tracks (.data/orders.json)
+src/lib/rules.ts       Seller rules and the deterministic rule check (+ rules.test.ts)
+src/lib/actions.ts     The only path to PayPal actions: rule check, execution, audit log
+src/lib/store.ts       JSON storage in .data/ (tracked orders, rules, audit log)
 src/app/               Case list (/) and case detail (/cases/[id]) pages
 scripts/seed.ts        Creates sandbox demo cases
 scripts/buyer-sim.ts   Simulates the buyer in the sandbox website (approve, file dispute, accept offer)
@@ -66,6 +71,12 @@ Requirements: Node.js 20+, a free [PayPal Developer](https://developer.paypal.co
    A new dispute spends a few minutes in PayPal review before you can respond to it.
 
 The sandbox app has no Transaction Search access, so the app tracks the orders it creates. To add an existing sandbox order: `npm run seed -- --track <ORDER_ID>`.
+
+### Tests
+
+```bash
+npm test   # rule checks, including attempts to talk the agent past its limits
+```
 
 ### Dispute smoke test
 

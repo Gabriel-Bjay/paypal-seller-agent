@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { buildCase, DISPUTE_REASONS, money, type Actor } from "@/lib/cases";
 import { listTrackedOrders } from "@/lib/store";
 import { FlagBanner, StatusBadge, formatDate } from "@/components/case-ui";
+import { readAudit } from "@/lib/actions";
+import { captureAction } from "../../server-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -13,12 +15,20 @@ const DOT: Record<string, string> = {
   neutral: "bg-neutral-400",
 };
 
-export default async function CasePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CasePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { id } = await params;
+  const { error } = await searchParams;
   const tracked = await listTrackedOrders();
   const entry = tracked.find((t) => t.orderId === id);
   if (!entry) notFound();
   const c = await buildCase(id, entry.disputeId);
+  const audit = await readAudit(id);
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
@@ -48,12 +58,23 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
         ))}
       </section>
 
+      {error && <FlagBanner flag={{ level: "critical", message: error }} />}
+
       {c.flags.length > 0 && (
         <section className="mt-6 space-y-2">
           {c.flags.map((f) => (
             <FlagBanner key={f.message} flag={f} />
           ))}
         </section>
+      )}
+
+      {c.status === "Not captured" && (
+        <form action={captureAction} className="mt-4">
+          <input type="hidden" name="orderId" value={c.id} />
+          <button type="submit" className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900">
+            Capture {money(c.amount)} now
+          </button>
+        </form>
       )}
 
       {c.dispute && (
@@ -91,6 +112,21 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           ))}
         </ol>
       </section>
+      {audit.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mb-3 font-medium">Action log</h2>
+          <ul className="space-y-2 text-sm">
+            {audit.map((a, i) => (
+              <li key={i} className="rounded-lg border border-neutral-200 px-3 py-2 dark:border-neutral-800">
+                <span className="text-neutral-500">{formatDate(a.at)}</span> · <span className="font-medium">{a.action.type.replace("_", " ")}</span> ·{" "}
+                {a.outcome === "executed" ? "done" : a.outcome}
+                {a.approvedBySeller && " (approved by you)"}
+                {a.error && <div className="mt-1 text-neutral-500">{a.error}</div>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }

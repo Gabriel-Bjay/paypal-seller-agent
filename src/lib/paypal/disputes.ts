@@ -1,4 +1,4 @@
-import { paypalRequest } from "./client";
+import { paypalMultipart, paypalRequest } from "./client";
 import type { Money } from "./orders";
 
 export type OfferEvent = {
@@ -86,4 +86,14 @@ export function sendMessage(disputeId: string, message: string) {
     method: "POST",
     body: { message },
   });
+}
+
+/** Submits the seller's side of the case as a written note (no file attachments yet). */
+export function provideEvidence(disputeId: string, note: string) {
+  const form = new FormData();
+  form.append(
+    "input",
+    new Blob([JSON.stringify({ evidences: [{ evidence_type: "OTHER", notes: note }] })], { type: "application/json" }),
+  );
+  return paypalMultipart(`/v1/customer/disputes/${disputeId}/provide-evidence`, form);
 }

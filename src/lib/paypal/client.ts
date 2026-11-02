@@ -45,6 +45,16 @@ export async function getAccessToken(): Promise<string> {
   return cachedToken.value;
 }
 
+/** Sends multipart/form-data (used by endpoints that accept file uploads, such as dispute evidence). */
+export async function paypalMultipart<T>(path: string, form: FormData): Promise<T> {
+  const token = await getAccessToken();
+  const res = await fetch(`${API_BASE}${path}`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: form });
+  const text = await res.text();
+  const body = text ? JSON.parse(text) : {};
+  if (!res.ok) throw new PayPalError(`POST ${path} failed: ${body.name ?? res.status}`, res.status, body);
+  return body as T;
+}
+
 export async function paypalRequest<T>(
   path: string,
   init: { method?: string; body?: unknown; headers?: Record<string, string> } = {},

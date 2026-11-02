@@ -36,6 +36,7 @@ export type Case = {
   item: string;
   buyer?: string;
   status: CaseStatus;
+  orderStatus: string;
   createdAt?: string;
   updatedAt?: string;
   amount?: Money;
@@ -190,6 +191,7 @@ export async function buildCase(orderId: string, knownDisputeId?: string): Promi
     item: unit?.description ?? "Untitled order",
     buyer: buyerName || order.payer?.email_address,
     status,
+    orderStatus: order.status,
     createdAt: order.create_time,
     updatedAt: timeline.at(-1)?.at ?? order.update_time,
     amount: unit?.amount ?? capture?.amount,
