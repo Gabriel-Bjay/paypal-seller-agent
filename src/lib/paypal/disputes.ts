@@ -9,8 +9,17 @@ export type OfferEvent = {
   offer_time: string;
 };
 
+export type DisputeMessage = {
+  posted_by: "BUYER" | "SELLER" | string;
+  time_posted: string;
+  content?: string;
+};
+
 export type Dispute = {
   dispute_id: string;
+  create_time?: string;
+  update_time?: string;
+  messages?: DisputeMessage[];
   reason: string;
   status: string;
   dispute_state?: string;
@@ -29,7 +38,7 @@ export type Dispute = {
     make_offer?: { offer_types: string[] };
     acknowledge_return_item?: unknown;
   };
-  dispute_outcome?: { outcome_code: string; amount_refunded?: Money };
+  dispute_outcome?: { outcome_code: string; outcome_reason?: string; amount_refunded?: Money };
   links?: { href: string; rel: string; method: string }[];
 };
 

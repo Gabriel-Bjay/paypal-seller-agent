@@ -6,6 +6,7 @@
 
 import { approveOrder, acceptOffer, fileNotReceivedDispute } from "./buyer-sim";
 import { captureOrder, createOrder, getCapture } from "../src/lib/paypal/orders";
+import { linkDispute, trackOrder } from "../src/lib/store";
 import { allowedActions, findDisputesForTransaction, getDispute, makeOffer } from "../src/lib/paypal/disputes";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -25,6 +26,7 @@ async function main() {
   const amount = { currency_code: "USD", value: "49.00" };
 
   const { order, approvalUrl } = await createOrder(amount, "Smoke test: handmade leather bag");
+  await trackOrder(order.id);
   log("Order created", order.id);
 
   await approveOrder(approvalUrl);
@@ -34,6 +36,7 @@ async function main() {
   log("Payment captured", capture.id);
 
   const caseId = await fileNotReceivedDispute("$49.00", "I paid but the item never arrived.");
+  await linkDispute(order.id, caseId);
   log("Buyer filed dispute", caseId);
 
   // A new dispute starts in PayPal review; wait until the seller is allowed to respond.

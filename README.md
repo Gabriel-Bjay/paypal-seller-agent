@@ -23,10 +23,20 @@ Disputes cost small online sellers money and time: a lost "item not received" cl
 | Payments v2 (captures) | Payment and refund state |
 | Customer Disputes v1 | Find disputes, read allowed actions, make offers, accept claims, send messages |
 
+## What works today
+
+- **Case list:** every tracked PayPal order with a plain-English status (Action needed, Not captured, In PayPal review, Refunded, Paid...), the ones needing attention first.
+- **Case detail:** money summary (amount, PayPal fee, refunded), flags for anything that needs attention, the dispute summary and a timeline built from PayPal data: payment, fee, refunds, dispute, messages, offers and outcome.
+- **Seed data:** `npm run seed` creates five realistic sandbox cases, including an open "item not received" dispute.
+
 ## Project structure
 
 ```
 src/lib/paypal/        PayPal REST client, orders and disputes helpers
+src/lib/cases.ts       Builds a case (status, flags, timeline) from PayPal data
+src/lib/store.ts       The list of orders the app tracks (.data/orders.json)
+src/app/               Case list (/) and case detail (/cases/[id]) pages
+scripts/seed.ts        Creates sandbox demo cases
 scripts/buyer-sim.ts   Simulates the buyer in the sandbox website (approve, file dispute, accept offer)
 scripts/dispute-smoke-test.ts   End-to-end check of the dispute loop
 docs/sandbox-findings.md        What we learned about the PayPal sandbox
@@ -45,18 +55,23 @@ Requirements: Node.js 20+, a free [PayPal Developer](https://developer.paypal.co
    cp .env.example .env.local   # then fill in the values from steps 1 and 2
    ```
 
-4. **Run the app:**
+4. **Create demo data and run the app:**
 
    ```bash
-   npm run dev   # http://localhost:3000
+   npx playwright install chromium   # first time only, or set CHROMIUM_PATH
+   npm run seed                      # about 5 minutes
+   npm run dev                       # http://localhost:3000
    ```
+
+   A new dispute spends a few minutes in PayPal review before you can respond to it.
+
+The sandbox app has no Transaction Search access, so the app tracks the orders it creates. To add an existing sandbox order: `npm run seed -- --track <ORDER_ID>`.
 
 ### Dispute smoke test
 
 Runs the full loop in the sandbox: buyer pays, buyer opens an "item not received" dispute, the seller offers a $20 partial refund through the API, the buyer accepts, and PayPal partially refunds the payment.
 
 ```bash
-npx playwright install chromium   # first time only, or set CHROMIUM_PATH
 npm run smoke:dispute
 ```
 

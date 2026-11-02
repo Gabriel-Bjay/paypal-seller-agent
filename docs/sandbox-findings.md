@@ -14,4 +14,7 @@ Notes from testing the dispute loop in the PayPal sandbox (2 Nov 2026).
 - **Listing disputes without filters returned nothing**, but `?disputed_transaction_id=<capture id>` found the dispute. Look disputes up by transaction.
 - **New disputes start in PayPal review** (`UNDER_REVIEW` / `UNDER_PAYPAL_REVIEW`, stage `INQUIRY`) with no allowed actions. After a few minutes they moved to `WAITING_FOR_SELLER_RESPONSE`. Poll before acting.
 - **After an offer**, the dispute shows `WAITING_FOR_BUYER_RESPONSE`, then returns to PayPal review once the buyer accepts; the refund appears on the capture first.
+- **Dispute search lags:** a dispute filed minutes ago can be fetched by ID but not yet found by `?disputed_transaction_id=`. The app stores dispute IDs once known and only falls back to search.
+- **Failed refunds appear during disputes:** an order can show a `FAILED` refund the seller never made (seen at the moment the seller responded). The timeline hides failed refunds because no money moved.
+- **No Transaction Search scope** on the default sandbox app, so the app keeps its own list of tracked orders.
 - **There is no buyer-side REST API** for approving payments, filing disputes or accepting offers, so these run through the sandbox website.

@@ -43,3 +43,6 @@ next-env.d.ts
 
 # sandbox buyer browser session
 .sandbox/
+
+# local case store
+.data/

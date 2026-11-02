@@ -6,13 +6,30 @@ export type Capture = {
   id: string;
   status: string;
   amount: Money;
+  create_time?: string;
+  update_time?: string;
+  seller_receivable_breakdown?: { gross_amount: Money; paypal_fee?: Money; net_amount?: Money };
+};
+
+export type Refund = {
+  id: string;
+  status: string;
+  amount: Money;
+  create_time?: string;
 };
 
 export type Order = {
   id: string;
   status: string;
+  create_time?: string;
+  update_time?: string;
+  payer?: { email_address?: string; name?: { given_name?: string; surname?: string } };
   links?: { href: string; rel: string; method: string }[];
-  purchase_units?: { payments?: { captures?: Capture[] } }[];
+  purchase_units?: {
+    description?: string;
+    amount?: Money;
+    payments?: { captures?: Capture[]; refunds?: Refund[] };
+  }[];
 };
 
 /** Creates a PayPal-wallet order. The buyer must approve it at the returned approval URL. */
@@ -52,4 +69,12 @@ export async function captureOrder(orderId: string) {
 
 export function getCapture(captureId: string) {
   return paypalRequest<Capture>(`/v2/payments/captures/${captureId}`);
+}
+
+/** Refunds a capture in full, or partially when an amount is given. */
+export function refundCapture(captureId: string, amount?: Money, note?: string) {
+  return paypalRequest<Refund>(`/v2/payments/captures/${captureId}/refund`, {
+    method: "POST",
+    body: { ...(amount ? { amount } : {}), ...(note ? { note_to_payer: note } : {}) },
+  });
 }

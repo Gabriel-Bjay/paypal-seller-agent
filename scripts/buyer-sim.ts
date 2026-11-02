@@ -38,14 +38,20 @@ async function dismissCookies(page: Page) {
   await page.click("text=Yes, I accept", { timeout: 3000 }).catch(() => {});
 }
 
-/** Fills the PayPal login form if it is showing. */
+/**
+ * Fills the PayPal login form if it is showing. Handles both the full form and the
+ * "welcome back" variant that only asks for the password when a saved session expires.
+ */
 async function logIn(page: Page) {
-  if (!(await page.isVisible("#email").catch(() => false))) return;
+  const visible = (sel: string) => page.isVisible(sel).catch(() => false);
+  if (!(await visible("#email")) && !(await visible("#password"))) return;
   const { email, password } = buyer();
-  await page.fill("#email", email);
-  if (await page.isVisible("#btnNext")) {
-    await page.click("#btnNext");
-    await sleep(4000);
+  if (await visible("#email")) {
+    await page.fill("#email", email);
+    if (await visible("#btnNext")) {
+      await page.click("#btnNext");
+      await sleep(4000);
+    }
   }
   await page.fill("#password", password);
   await page.click("#btnLogin");
@@ -73,14 +79,20 @@ export async function fileNotReceivedDispute(amountText: string, message: string
     await page.goto(`${SANDBOX}/signin`, { timeout: 60000 });
     await sleep(5000);
     await logIn(page);
-    await page.goto(`${SANDBOX}/resolutioncenter`, { timeout: 60000 });
-    await sleep(8000);
-    await dismissCookies(page);
-
     // The page also lists open cases and saved drafts; pick the newest payment in the transaction list.
-    await page
-      .locator(`xpath=//*[contains(text(),'Choose a transaction')]/following::*[contains(text(),'${amountText}')][1]`)
-      .click();
+    // A fresh payment can take a few minutes to appear there, so reload until it does.
+    const payment = page.locator(
+      `xpath=//*[contains(text(),'Choose a transaction')]/following::*[contains(text(),'${amountText}')][1]`,
+    );
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await page.goto(`${SANDBOX}/resolutioncenter`, { timeout: 60000 });
+      await sleep(8000);
+      await logIn(page);
+      await dismissCookies(page);
+      if (await payment.isVisible().catch(() => false)) break;
+      await sleep(20000);
+    }
+    await payment.click();
     await sleep(5000);
     await page.locator("button:has-text('Report a Problem'), a:has-text('Report a Problem')").first().click();
     await sleep(6000);
