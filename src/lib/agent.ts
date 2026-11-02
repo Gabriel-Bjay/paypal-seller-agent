@@ -43,7 +43,11 @@ export async function saveNotes(orderId: string, text: string) {
 }
 
 export async function getRecommendation(orderId: string): Promise<Recommendation | undefined> {
-  return (await readJson<Record<string, Recommendation>>(RECS_FILE, {}))[orderId];
+  return (await listRecommendations())[orderId];
+}
+
+export function listRecommendations(): Promise<Record<string, Recommendation>> {
+  return readJson<Record<string, Recommendation>>(RECS_FILE, {});
 }
 
 async function saveRecommendation(rec: Recommendation) {
