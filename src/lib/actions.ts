@@ -42,11 +42,16 @@ export function contextFor(c: Case): ActionContext {
   };
 }
 
-/** Checks an action against the current PayPal state and the seller's rules, without running it. */
-export async function checkAction(orderId: string, action: ProposedAction) {
+/** Loads a tracked order's case fresh from PayPal. */
+export async function loadCase(orderId: string): Promise<Case> {
   const entry = (await listTrackedOrders()).find((t) => t.orderId === orderId);
   if (!entry) throw new Error(`Order ${orderId} is not tracked`);
-  const c = await buildCase(orderId, entry.disputeId);
+  return buildCase(orderId, entry.disputeId);
+}
+
+/** Checks an action against the current PayPal state and the seller's rules, without running it. */
+export async function checkAction(orderId: string, action: ProposedAction) {
+  const c = await loadCase(orderId);
   return { case: c, verdict: evaluate(action, contextFor(c), await getRules()) };
 }
 

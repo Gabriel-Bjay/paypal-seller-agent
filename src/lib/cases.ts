@@ -123,9 +123,15 @@ export async function buildCase(orderId: string, knownDisputeId?: string): Promi
   for (const r of refunds) {
     if (!r.create_time || r.status === "FAILED" || r.status === "CANCELLED") continue;
     const ok = r.status === "COMPLETED";
+    const duringDispute = Date.parse(r.create_time) >= disputeStart;
+    // A pending "refund" created during a dispute is PayPal holding the money until it is resolved.
+    if (!ok && duringDispute && dispute?.status !== "RESOLVED") {
+      timeline.push({ at: r.create_time, actor: "paypal", title: `PayPal is holding ${money(r.amount)} while the dispute is open` });
+      continue;
+    }
     timeline.push({
       at: r.create_time,
-      actor: Date.parse(r.create_time) >= disputeStart ? "paypal" : "seller",
+      actor: duringDispute ? "paypal" : "seller",
       title: ok ? `Refunded ${money(r.amount)} to the buyer` : `Refund of ${money(r.amount)} ${r.status.toLowerCase()}`,
       tone: ok ? "bad" : "neutral",
     });

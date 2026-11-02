@@ -21,7 +21,13 @@ Disputes cost small online sellers money and time: a lost "item not received" cl
 |---|---|
 | Orders v2 | Create and capture payments |
 | Payments v2 (captures) | Payment and refund state |
-| Customer Disputes v1 | Find disputes, read allowed actions, make offers, accept claims, send messages |
+| Customer Disputes v1 | Find disputes, read allowed actions, make offers, accept claims, provide evidence, send messages |
+
+## AI used
+
+| Tool | Use |
+|---|---|
+| Claude Opus 5.5 via the Anthropic TypeScript SDK (`@anthropic-ai/sdk`) | The resolution agent in `src/lib/agent.ts`: tool runner with five tools (get_case, get_seller_notes, get_rules, check_action, submit_recommendation), adaptive thinking, server-side refusal fallback |
 
 ## What works today
 
@@ -30,6 +36,7 @@ Disputes cost small online sellers money and time: a lost "item not received" cl
 - **Rules (`/settings`):** the seller decides what the agent may do alone, what needs approval and what is blocked (amount limit, approval and block thresholds as % of the order, approval before fighting or messaging). Enforced in code by `src/lib/rules.ts`; the AI can only propose actions.
 - **Safety checks that always apply:** no refund above what is left on the payment, only actions PayPal currently allows on the dispute, strictly valid amounts.
 - **Action gate and audit log:** every PayPal action goes through `executeAction` in `src/lib/actions.ts`, which re-checks live PayPal state and the rules, refuses blocked or unapproved actions, and logs every attempt (shown on the case page). Example: capture a payment the buyer approved but you never collected.
+- **Resolution agent (Claude Opus 5.5):** on a case with an open dispute, the seller can add notes (shipping, tracking) and ask the agent what to do. Using the Anthropic SDK tool runner, the agent reads the case, the notes and the rules, dry-runs candidate actions against the rule check, and submits one recommendation: fight, settle with a partial refund, refund, message the buyer or wait, with reasoning, the facts used and the money impact. Actions the rules allow run automatically through the action gate; others wait for the seller's Approve or Dismiss. Buyer messages reach the agent wrapped as untrusted text.
 - **Seed data:** `npm run seed` creates five realistic sandbox cases, including an open "item not received" dispute.
 
 ## Project structure
@@ -39,6 +46,7 @@ src/lib/paypal/        PayPal REST client, orders and disputes helpers
 src/lib/cases.ts       Builds a case (status, flags, timeline) from PayPal data
 src/lib/rules.ts       Seller rules and the deterministic rule check (+ rules.test.ts)
 src/lib/actions.ts     The only path to PayPal actions: rule check, execution, audit log
+src/lib/agent.ts       The Claude resolution agent, seller notes and recommendations
 src/lib/store.ts       JSON storage in .data/ (tracked orders, rules, audit log)
 src/app/               Case list (/) and case detail (/cases/[id]) pages
 scripts/seed.ts        Creates sandbox demo cases
@@ -60,6 +68,8 @@ Requirements: Node.js 20+, a free [PayPal Developer](https://developer.paypal.co
    cp .env.example .env.local   # then fill in the values from steps 1 and 2
    ```
 
+   Also set `ANTHROPIC_API_KEY` (console.anthropic.com → API Keys) for the resolution agent.
+
 4. **Create demo data and run the app:**
 
    ```bash
@@ -71,6 +81,12 @@ Requirements: Node.js 20+, a free [PayPal Developer](https://developer.paypal.co
    A new dispute spends a few minutes in PayPal review before you can respond to it.
 
 The sandbox app has no Transaction Search access, so the app tracks the orders it creates. To add an existing sandbox order: `npm run seed -- --track <ORDER_ID>`.
+
+### Run the agent from the command line
+
+```bash
+npm run agent -- <ORDER_ID>   # prints the recommendation as JSON
+```
 
 ### Tests
 

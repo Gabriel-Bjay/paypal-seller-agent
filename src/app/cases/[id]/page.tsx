@@ -5,6 +5,8 @@ import { listTrackedOrders } from "@/lib/store";
 import { FlagBanner, StatusBadge, formatDate } from "@/components/case-ui";
 import { readAudit } from "@/lib/actions";
 import { captureAction } from "../../server-actions";
+import { getNotes, getRecommendation } from "@/lib/agent";
+import { AgentPanel } from "@/components/agent-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +30,8 @@ export default async function CasePage({
   const entry = tracked.find((t) => t.orderId === id);
   if (!entry) notFound();
   const c = await buildCase(id, entry.disputeId);
-  const audit = await readAudit(id);
+  const [audit, notes, rec] = await Promise.all([readAudit(id), getNotes(id), getRecommendation(id)]);
+  const disputeOpen = Boolean(c.dispute && c.dispute.status !== "RESOLVED");
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
@@ -58,7 +61,11 @@ export default async function CasePage({
         ))}
       </section>
 
-      {error && <FlagBanner flag={{ level: "critical", message: error }} />}
+      {error && (
+        <div className="mt-6">
+          <FlagBanner flag={{ level: "critical", message: error }} />
+        </div>
+      )}
 
       {c.flags.length > 0 && (
         <section className="mt-6 space-y-2">
@@ -96,6 +103,8 @@ export default async function CasePage({
           </dl>
         </section>
       )}
+
+      {(disputeOpen || rec) && <AgentPanel orderId={c.id} notes={notes} rec={rec} canAct={disputeOpen} />}
 
       <section className="mt-8">
         <h2 className="mb-4 font-medium">Timeline</h2>
