@@ -1,12 +1,15 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { saveNotesAction } from "@/app/server-actions";
 import { SubmitButton } from "./submit-button";
 
 /** Saves the seller's notes in place, without reloading the whole case from PayPal. */
 export function NotesForm({ orderId, notes, buttonClass }: { orderId: string; notes: string; buttonClass: string }) {
   const [state, action] = useActionState(saveNotesAction, { savedAt: 0 });
+  // Controlled, because React resets uncontrolled fields after a form action, which made the
+  // saved note vanish from the box.
+  const [text, setText] = useState(notes);
 
   return (
     <form action={action} className="mt-3">
@@ -17,7 +20,8 @@ export function NotesForm({ orderId, notes, buttonClass }: { orderId: string; no
       <textarea
         id="notes"
         name="notes"
-        defaultValue={notes}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
         rows={3}
         placeholder="e.g. Shipped 28 Oct with Posta Kenya, tracking KE123456. Last scan: arrived in destination country 31 Oct."
         className="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
