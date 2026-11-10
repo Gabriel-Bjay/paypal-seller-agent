@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NavProgress } from "@/components/nav-progress";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NavProgress />
         <nav className="border-b border-neutral-200 bg-white">
           <div className="mx-auto flex max-w-7xl items-center gap-8 px-4 py-3 text-sm">
             <Link href="/" className="flex items-center gap-2.5">

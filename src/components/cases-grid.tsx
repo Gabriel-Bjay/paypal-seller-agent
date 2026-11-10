@@ -13,6 +13,7 @@ import {
 } from "ag-grid-community";
 import type { CaseStatus } from "@/lib/cases";
 import { StatusBadge } from "./case-ui";
+import { NAV_START } from "./nav-progress";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -105,7 +106,11 @@ export function CasesGrid({ rows }: { rows: CaseRow[] }) {
           rowHeight={56}
           getRowId={(p) => p.data.id}
           getRowStyle={(p: RowClassParams<CaseRow>) => (p.data?.urgent ? { boxShadow: "inset 3px 0 0 #dc2626" } : undefined)}
-          onRowClicked={(e) => e.data && router.push(`/cases/${e.data.id}`)}
+          onRowClicked={(e) => {
+            if (!e.data) return;
+            window.dispatchEvent(new Event(NAV_START));
+            router.push(`/cases/${e.data.id}`);
+          }}
           rowStyle={{ cursor: "pointer" }}
           overlayNoRowsTemplate="No cases match your search."
         />
