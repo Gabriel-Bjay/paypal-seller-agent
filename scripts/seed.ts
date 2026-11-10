@@ -11,6 +11,10 @@ import { linkDispute, trackOrder } from "../src/lib/store";
 
 const usd = (value: string): Money => ({ currency_code: "USD", value });
 
+// The buyer simulator finds the payment to dispute by its amount, and the sandbox buyer may already
+// have older payments of the same size. Random cents make this run's payment unique.
+const disputeAmount = `120.${String(10 + Math.floor(Math.random() * 90))}`;
+
 type Scenario = { item: string; amount: string; run: (orderId: string, approvalUrl: string) => Promise<string> };
 
 const scenarios: Scenario[] = [
@@ -48,11 +52,11 @@ const scenarios: Scenario[] = [
   },
   {
     item: "Handmade leather bag",
-    amount: "120.00",
+    amount: disputeAmount,
     run: async (id, url) => {
       await approveOrder(url);
       await captureOrder(id);
-      const caseId = await fileNotReceivedDispute("$120.00", "I paid a week ago and the bag still hasn't arrived. Tracking hasn't updated.");
+      const caseId = await fileNotReceivedDispute(`$${disputeAmount}`, "I paid a week ago and the bag still hasn't arrived. Tracking hasn't updated.");
       await linkDispute(id, caseId);
       return `paid, buyer opened dispute ${caseId}`;
     },

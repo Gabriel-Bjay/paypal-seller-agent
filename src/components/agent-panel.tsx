@@ -59,6 +59,7 @@ export function AgentPanel({ orderId, notes, rec, canAct }: { orderId: string; n
         <div className="mt-5 rounded-lg bg-neutral-50 p-4 dark:bg-neutral-900">
           <div className="text-xs text-neutral-500">
             {formatDate(rec.createdAt)} · {STATUS_TEXT[rec.status]}
+            {rec.model && ` · ${rec.model}`}
           </div>
           <h3 className="mt-1 text-lg font-semibold">{rec.headline}</h3>
           <p className="mt-2 text-sm">{rec.reasoning}</p>

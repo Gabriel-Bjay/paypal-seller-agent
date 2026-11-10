@@ -11,10 +11,12 @@ import { DISPUTE_REASONS, money, type Case } from "./cases";
 import { getRules, type ProposedAction, type Verdict } from "./rules";
 import { readJson, writeJson } from "./store";
 
-const MODEL = "claude-opus-5-5";
+/** Override with AGENT_MODEL in .env.local to try another Claude model. */
+const MODEL = process.env.AGENT_MODEL || "claude-opus-5-5";
 
 export type Recommendation = {
   orderId: string;
+  model?: string;
   createdAt: string;
   decision: "settle" | "fight" | "refund" | "message" | "wait";
   headline: string;
@@ -204,7 +206,7 @@ export async function runResolutionAgent(orderId: string): Promise<Recommendatio
   const result = submitted as Omit<Recommendation, "orderId" | "createdAt" | "status" | "verdict"> | null;
   if (!result) throw new Error("The agent finished without submitting a recommendation.");
 
-  const rec: Recommendation = { ...result, orderId, createdAt: new Date().toISOString(), verdict: null, status: "no_action" };
+  const rec: Recommendation = { ...result, orderId, model: final.model, createdAt: new Date().toISOString(), verdict: null, status: "no_action" };
 
   if (rec.action) {
     // Re-check now; the agent's own check is advisory only.
