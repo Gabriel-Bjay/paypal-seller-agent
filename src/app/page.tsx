@@ -60,7 +60,7 @@ export default async function Dashboard() {
   ];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-10">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">Cases</h1>
         <p className="mt-1 text-sm text-neutral-500">Every PayPal order the agent watches. Click a row to open the case.</p>
@@ -68,7 +68,7 @@ export default async function Dashboard() {
 
       <section className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map((t) => (
-          <div key={t.label} className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+          <div key={t.label} className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
             <div className="text-sm text-neutral-500">{t.label}</div>
             <div className="mt-1 text-2xl font-semibold tabular-nums">{t.value}</div>
             <div className="mt-1 text-xs text-neutral-500">{t.hint}</div>

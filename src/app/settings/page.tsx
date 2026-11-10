@@ -21,7 +21,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       {saved && <p className="mt-4 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-800 dark:bg-green-950 dark:text-green-200">Rules saved.</p>}
       {error && <p className="mt-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">{error}</p>}
 
-      <form action={saveRulesAction} className="mt-6 divide-y divide-neutral-200 rounded-lg border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
+      <form action={saveRulesAction} className="mt-6 divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white shadow-sm">
         <label className="flex items-center justify-between gap-4 p-4">
           <span>
             <span className="font-medium">Act without asking up to</span>
@@ -58,7 +58,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <input name="approveMessages" type="checkbox" defaultChecked={rules.approveMessages} className="h-5 w-5" />
         </label>
         <div className="flex justify-end p-4">
-          <button type="submit" className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900">
+          <button type="submit" className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">
             Save rules
           </button>
         </div>

@@ -4,7 +4,7 @@ import { SubmitButton } from "./submit-button";
 import { formatDate } from "./case-ui";
 
 const primary =
-  "rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900";
+  "rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700";
 const secondary =
   "rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900";
 
@@ -34,7 +34,7 @@ function describeAction(a: NonNullable<Recommendation["action"]>) {
 
 export function AgentPanel({ orderId, notes, rec, canAct }: { orderId: string; notes: string; rec?: Recommendation; canAct: boolean }) {
   return (
-    <section className="mt-8 rounded-xl border border-neutral-200 p-5 dark:border-neutral-800">
+    <section className="mt-8 rounded-xl border border-indigo-200 bg-white p-5 shadow-sm">
       <h2 className="font-medium">Resolution agent</h2>
 
       <form action={saveNotesAction} className="mt-3">
@@ -48,7 +48,7 @@ export function AgentPanel({ orderId, notes, rec, canAct }: { orderId: string; n
           defaultValue={notes}
           rows={3}
           placeholder="e.g. Shipped 28 Oct with Posta Kenya, tracking KE123456. Last scan: arrived in destination country 31 Oct."
-          className="mt-1 w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+          className="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
         <SubmitButton busy="Saving…" className={`${secondary} mt-2`}>
           Save notes
@@ -56,7 +56,7 @@ export function AgentPanel({ orderId, notes, rec, canAct }: { orderId: string; n
       </form>
 
       {rec && (
-        <div className="mt-5 rounded-lg bg-neutral-50 p-4 dark:bg-neutral-900">
+        <div className="mt-5 rounded-lg bg-indigo-50/60 p-4">
           <div className="text-xs text-neutral-500">
             {formatDate(rec.createdAt)} · {STATUS_TEXT[rec.status]}
             {rec.model && ` · ${rec.model}`}

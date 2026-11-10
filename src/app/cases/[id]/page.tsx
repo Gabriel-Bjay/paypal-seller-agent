@@ -54,7 +54,7 @@ export default async function CasePage({
           ["PayPal fee", money(c.fee)],
           ["Refunded", c.refunded ? money({ currency_code: c.amount?.currency_code ?? "USD", value: String(c.refunded) }) : "-"],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-neutral-200 p-3 dark:border-neutral-800">
+          <div key={label} className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
             <div className="text-xs text-neutral-500">{label}</div>
             <div className="mt-1 truncate font-medium tabular-nums">{value}</div>
           </div>
@@ -78,14 +78,14 @@ export default async function CasePage({
       {c.status === "Not captured" && (
         <form action={captureAction} className="mt-4">
           <input type="hidden" name="orderId" value={c.id} />
-          <button type="submit" className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900">
+          <button type="submit" className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700">
             Capture {money(c.amount)} now
           </button>
         </form>
       )}
 
       {c.dispute && (
-        <section className="mt-6 rounded-lg border border-neutral-200 p-4 text-sm dark:border-neutral-800">
+        <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-4 text-sm shadow-sm">
           <h2 className="font-medium">Dispute {c.dispute.dispute_id}</h2>
           <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-neutral-600 dark:text-neutral-300">
             <dt>Reason</dt>

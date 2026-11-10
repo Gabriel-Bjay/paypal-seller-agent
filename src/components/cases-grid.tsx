@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AgGridReact } from "ag-grid-react";
 import {
   AllCommunityModule,
   ModuleRegistry,
-  colorSchemeDark,
   themeQuartz,
   type ColDef,
   type ICellRendererParams,
@@ -35,24 +34,18 @@ const usd = (n: number) => (n ? `$${n.toFixed(2)}` : "-");
 const date = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "-";
 
-const lightTheme = themeQuartz.withParams({ fontFamily: "inherit", headerFontWeight: 500, rowHoverColor: "rgba(0,0,0,0.03)" });
-const darkTheme = themeQuartz.withPart(colorSchemeDark).withParams({ fontFamily: "inherit", headerFontWeight: 500 });
-
-function useDarkMode() {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    setDark(media.matches);
-    const onChange = (e: MediaQueryListEvent) => setDark(e.matches);
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
-  }, []);
-  return dark;
-}
+const theme = themeQuartz.withParams({
+  fontFamily: "inherit",
+  headerFontWeight: 600,
+  headerBackgroundColor: "#f8fafc",
+  rowHoverColor: "#eef2ff",
+  accentColor: "#4f46e5",
+  borderRadius: 12,
+  wrapperBorderRadius: 12,
+});
 
 export function CasesGrid({ rows }: { rows: CaseRow[] }) {
   const router = useRouter();
-  const dark = useDarkMode();
   const [search, setSearch] = useState("");
 
   const columns = useMemo<ColDef<CaseRow>[]>(
@@ -61,7 +54,7 @@ export function CasesGrid({ rows }: { rows: CaseRow[] }) {
         field: "item",
         headerName: "Item",
         flex: 2,
-        minWidth: 200,
+        minWidth: 180,
         cellRenderer: (p: ICellRendererParams<CaseRow>) => (
           <div className="leading-tight">
             <div className="font-medium">{p.data?.item}</div>
@@ -69,26 +62,26 @@ export function CasesGrid({ rows }: { rows: CaseRow[] }) {
           </div>
         ),
       },
-      { field: "buyer", headerName: "Buyer", flex: 1, minWidth: 120 },
+      { field: "buyer", headerName: "Buyer", flex: 1, minWidth: 100 },
       {
         field: "status",
         headerName: "Status",
-        minWidth: 170,
+        flex: 1,
+        minWidth: 150,
         cellRenderer: (p: ICellRendererParams<CaseRow>) => (p.data ? <StatusBadge status={p.data.status} /> : null),
       },
-      { field: "dispute", headerName: "Dispute", minWidth: 150 },
-      { field: "agent", headerName: "Agent", minWidth: 190 },
-      { field: "amount", headerName: "Amount", type: "rightAligned", minWidth: 110, valueFormatter: (p) => usd(p.value) },
+      { field: "dispute", headerName: "Dispute", flex: 1, minWidth: 130 },
+      { field: "agent", headerName: "Agent", flex: 1, minWidth: 150 },
+      { field: "amount", headerName: "Amount", type: "rightAligned", width: 105, valueFormatter: (p) => usd(p.value) },
       {
         field: "atRisk",
         headerName: "At risk",
         type: "rightAligned",
-        minWidth: 110,
+        width: 105,
         valueFormatter: (p) => usd(p.value),
-        cellClass: (p) => (p.value > 0 ? "font-semibold text-red-700 dark:text-red-300" : ""),
+        cellClass: (p) => (p.value > 0 ? "font-semibold text-red-700 " : ""),
       },
-      { field: "respondBy", headerName: "Respond by", minWidth: 140, valueFormatter: (p) => date(p.value) },
-      { field: "lastActivity", headerName: "Last activity", minWidth: 140, valueFormatter: (p) => date(p.value) },
+      { field: "respondBy", headerName: "Respond by", width: 130, valueFormatter: (p) => date(p.value) },
     ],
     [],
   );
@@ -100,11 +93,11 @@ export function CasesGrid({ rows }: { rows: CaseRow[] }) {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search items, buyers, statuses…"
-        className="mb-3 w-full max-w-sm rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-sm dark:border-neutral-700"
+        className="mb-3 w-full max-w-sm rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
       />
       <div className="h-[560px] w-full">
         <AgGridReact<CaseRow>
-          theme={dark ? darkTheme : lightTheme}
+          theme={theme}
           rowData={rows}
           columnDefs={columns}
           defaultColDef={{ sortable: true, filter: true, resizable: true }}
