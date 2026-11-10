@@ -31,11 +31,10 @@ export async function captureAction(form: FormData) {
   redirect(`/cases/${orderId}${error ? `?error=${encodeURIComponent(error)}` : ""}`);
 }
 
-export async function saveNotesAction(form: FormData) {
-  const orderId = String(form.get("orderId"));
-  await saveNotes(orderId, String(form.get("notes") ?? ""));
-  revalidatePath(`/cases/${orderId}`);
-  redirect(`/cases/${orderId}`);
+/** Saves notes without re-rendering the case page, which would reload everything from PayPal. */
+export async function saveNotesAction(_prev: { savedAt: number }, form: FormData) {
+  await saveNotes(String(form.get("orderId")), String(form.get("notes") ?? ""));
+  return { savedAt: Date.now() };
 }
 
 export async function runAgentAction(form: FormData) {

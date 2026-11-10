@@ -1,5 +1,6 @@
 import type { Recommendation } from "@/lib/agent";
-import { decideAction, runAgentAction, saveNotesAction } from "@/app/server-actions";
+import { decideAction, runAgentAction } from "@/app/server-actions";
+import { NotesForm } from "./notes-form";
 import { SubmitButton } from "./submit-button";
 import { formatDate } from "./case-ui";
 
@@ -37,23 +38,7 @@ export function AgentPanel({ orderId, notes, rec, canAct }: { orderId: string; n
     <section className="mt-8 rounded-xl border border-indigo-200 bg-white p-5 shadow-sm">
       <h2 className="font-medium">Resolution agent</h2>
 
-      <form action={saveNotesAction} className="mt-3">
-        <input type="hidden" name="orderId" value={orderId} />
-        <label className="text-sm text-neutral-500" htmlFor="notes">
-          Your notes for the agent: shipping, tracking, anything you know about this order
-        </label>
-        <textarea
-          id="notes"
-          name="notes"
-          defaultValue={notes}
-          rows={3}
-          placeholder="e.g. Shipped 28 Oct with Posta Kenya, tracking KE123456. Last scan: arrived in destination country 31 Oct."
-          className="mt-1 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-        />
-        <SubmitButton busy="Saving…" className={`${secondary} mt-2`}>
-          Save notes
-        </SubmitButton>
-      </form>
+      <NotesForm orderId={orderId} notes={notes} buttonClass={secondary} />
 
       {rec && (
         <div className="mt-5 rounded-lg bg-indigo-50/60 p-4">
